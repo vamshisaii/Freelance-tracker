@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "980646451927",
+    "firebase_url": "https://uipractice-fae48.firebaseio.com",
+    "project_id": "uipractice-fae48",
+    "storage_bucket": "uipractice-fae48.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:980646451927:android:2325db0b3fea22136a2e92",
+        "android_client_info": {
+          "package_name": "com.example.ui_practice"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "980646451927-ravvop3o2clg9ludcqrvgsvsg49dv6iv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTRdO7UA9_7k1-ykfRHVqFUtzHbf3987M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "980646451927-ravvop3o2clg9ludcqrvgsvsg49dv6iv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

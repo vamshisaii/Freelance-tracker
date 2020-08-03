@@ -1,4 +1,4 @@
-# ui_practice
+# Freelance tracker
 
 A new Flutter project.
 

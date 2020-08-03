@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:platform_alert_dialog/platform_alert_dialog.dart';
 import 'package:ui_practice/custom_widgets/custom_decorations.dart';
@@ -5,14 +7,16 @@ import 'package:ui_practice/models/job.dart';
 import 'package:ui_practice/services/database.dart';
 
 class EditJobPage extends StatefulWidget {
-  final DataBase database;
+  final Database database;
   final Job job;
   EditJobPage({Key key, @required this.database, this.job}) : super(key: key);
 
   static Future<void> show(
-      BuildContext context, DataBase database, Job job) async {
-    await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => EditJobPage(database: database, job: job),
+      BuildContext context, Database database, Job job) async {
+    await Navigator.of(context).push(PageRouteBuilder(
+      opaque: false,
+      pageBuilder: (context, _, __) =>
+          EditJobPage(database: database, job: job),
       fullscreenDialog: true,
     ));
   }
@@ -107,21 +111,14 @@ class _AddJobPageState extends State<EditJobPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      home: Scaffold(
-        appBar: AppBar(
-            elevation: 4,
-            title: Center(
-                child: Text(widget.job == null ? 'New Job' : 'Edit job')),
-            actions: <Widget>[
-              FlatButton(
-                onPressed: _submit,
-                child: Text('Save',
-                    style: TextStyle(fontSize: 18, color: Colors.white)),
-              )
-            ]),
-        body: _buildContent(),
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 4, sigmaY: 5),
+      child: MaterialApp(
+        theme:ThemeData.dark(),
+        home: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(child: _buildContent()),
+        ),
       ),
     );
   }
@@ -145,6 +142,7 @@ class _AddJobPageState extends State<EditJobPage> {
     return Form(
       key: _formKey,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: _buildFormChildren(),
       ),
@@ -153,6 +151,10 @@ class _AddJobPageState extends State<EditJobPage> {
 
   List<Widget> _buildFormChildren() {
     return [
+      Center(
+          child: Text(widget.job == null ? 'New Job' : 'Edit job',
+              style: TextStyle(fontSize: 20))),
+      SizedBox(height: 10),
       TextFormField(
           initialValue: _name,
           validator: (value) =>
@@ -179,6 +181,20 @@ class _AddJobPageState extends State<EditJobPage> {
         ),
         onSaved: (value) => _ratePerHour = int.tryParse(value) ?? 0,
       ),
+      SizedBox(height: 12),
+      FlatButton(
+        onPressed: _submit,
+        child: Container(
+          width: 80,
+          height: 48,
+          child: Center(
+              child: Card(
+            elevation: 5,
+            child: Center(child: Text('Save', style: TextStyle(fontSize: 18))),
+            color: Colors.blueAccent,
+          )),
+        ),
+      )
     ];
   }
 }

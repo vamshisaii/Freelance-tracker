@@ -1,16 +1,17 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:ui_practice/job_entries/job_entries_page.dart';
 import 'package:ui_practice/models/job.dart';
-import 'package:ui_practice/screens/EditJobPage.dart';
 import 'package:ui_practice/services/database.dart';
 
 class JobListTile extends StatefulWidget {
-  const JobListTile({Key key, @required this.job,})
-      : super(key: key);
+  const JobListTile({
+    Key key,
+    @required this.job,
+  }) : super(key: key);
 
   final Job job;
-  
 
   @override
   _JobListTileState createState() => _JobListTileState();
@@ -20,7 +21,7 @@ class _JobListTileState extends State<JobListTile> {
   ContainerTransitionType _transitionType = ContainerTransitionType.fade;
   @override
   Widget build(BuildContext context) {
-    final database = Provider.of<DataBase>(context);
+    final database = Provider.of<Database>(context);
 
     return GestureDetector(
       onVerticalDragEnd: (d) {
@@ -31,7 +32,7 @@ class _JobListTileState extends State<JobListTile> {
         width: 250,
         child: _OpenContainerWrapper(
           closedBuilder: (BuildContext _, VoidCallback openContainer) {
-            return _buildCard(openContainer);
+            return _buildCard(openContainer, database);
           },
           transitionType: _transitionType,
           job: widget.job,
@@ -40,7 +41,7 @@ class _JobListTileState extends State<JobListTile> {
     );
   }
 
-  InkWell _buildCard(VoidCallback openContainer) {
+  InkWell _buildCard(VoidCallback openContainer, Database database) {
     return InkWell(
         onTap: openContainer,
         child: Padding(
@@ -51,21 +52,43 @@ class _JobListTileState extends State<JobListTile> {
               color: Colors.white70,
               elevation: 10,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  SizedBox(height: 8),
+                  SizedBox(height: 12),
                   Row(
                     children: <Widget>[
                       SizedBox(width: 10),
-                      Icon(Icons.account_circle),
+                      Icon(
+                        Icons.work,
+                        color: Colors.blueGrey[400],
+                      ),
                       Expanded(
                         child: Container(),
                       ),
-                      Icon(Icons.mode_edit),
+                      Icon(Icons.more_vert),
                       SizedBox(width: 10),
                     ],
                   ),
                   SizedBox(height: 200),
-                  Text(widget.job.name, style: TextStyle(fontSize: 18)),
+                  FutureBuilder<int>(
+                      future: database.entriesCount(widget.job),
+                      builder:
+                          (BuildContext context, AsyncSnapshot<int> snapshot) {
+                        if (snapshot.hasData) {
+                          if (snapshot.data == 1)
+                            return Text(
+                              '    ${snapshot.data} Entry',
+                              style: TextStyle(color: Colors.black26),
+                            );
+                          return Text(
+                            '    ${snapshot.data} Entries',
+                            style: TextStyle(color: Colors.black26),
+                          );
+                        }
+                        return Container();
+                      }),
+                  Text('   ${widget.job.name}', style: TextStyle(fontSize: 20)),
                 ],
               ),
             )));
@@ -83,7 +106,7 @@ class _OpenContainerWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final database = Provider.of<DataBase>(context, listen: false);
+    final database = Provider.of<Database>(context, listen: false);
     return OpenContainer<bool>(
       closedColor: Colors.transparent,
       openColor: Colors.transparent,
@@ -92,7 +115,7 @@ class _OpenContainerWrapper extends StatelessWidget {
       openElevation: 0,
       transitionType: transitionType,
       openBuilder: (BuildContext context, VoidCallback _) {
-        return EditJobPage(
+        return JobEntriesPage(
           database: database,
           job: job,
         );

@@ -1,37 +1,66 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 
-
-
-class FirestoreService{
-  //private constructor, so that objects outside firestore service cant tap into it
-  //In summary it is to ensure that only one object with firestoreService can be created.
+class FirestoreService {
   FirestoreService._();
-  static final instance=FirestoreService._();
+  static final instance = FirestoreService._();
 
-
-  Future<void> setData({@required String path, @required Map<String, dynamic> data}) async {
+  Future<void> setData({
+    @required String path,
+    @required Map<String, dynamic> data,
+  }) async {
     final reference = Firestore.instance.document(path);
-    
+    print('$path: $data');
     await reference.setData(data);
   }
-  
-  Future<void> deleteData({@required String path})async{
-    final reference=Firestore.instance.document(path);
+
+  Future<void> deleteData({@required String path}) async {
+    final reference = Firestore.instance.document(path);
     await reference.delete();
   }
 
- 
-
-  //generic blueprint for reading data
   Stream<List<T>> collectionStream<T>({
-    @required String path,@required T builder(Map<String, dynamic> data,String documentId),
-  }){
-    
-    final reference = Firestore.instance.collection(path);
-    final snapshots = reference.snapshots();
+    @required String path,
+    @required T builder(Map<String, dynamic> data, String documentID),
+    Query queryBuilder(Query query),
+    int sort(T lhs, T rhs),
+  }) {
+    Query query = Firestore.instance.collection(path);
+    if (queryBuilder != null) {
+      query = queryBuilder(query);
+    }
+    final Stream<QuerySnapshot> snapshots = query.snapshots();
+    return snapshots.map((snapshot) {
+      final result = snapshot.documents
+          .map((snapshot) => builder(snapshot.data, snapshot.documentID))
+          .where((value) => value != null)
+          .toList();
+      if (sort != null) {
+        result.sort(sort);
+      }
+      return result;
+    });
+  }
 
-    return snapshots.map((event) =>
-        event.documents.map((element) => builder(element.data,element.documentID)).toList());
+  Stream<T> documentStream<T>({
+    @required String path,
+    @required T builder(Map<String, dynamic> data, String documentID),
+  }) {
+    final DocumentReference reference = Firestore.instance.document(path);
+    final Stream<DocumentSnapshot> snapshots = reference.snapshots();
+    return snapshots.map((snapshot) => builder(snapshot.data, snapshot.documentID));
+  }
+
+
+  Future<int> countDocuments({@required String path,Query queryBuilder(Query query)})async{
+   
+   Query query = Firestore.instance.collection(path);
+    if(queryBuilder!=null) query = queryBuilder(query);
+    
+    final QuerySnapshot snapshots =await query.getDocuments();
+    List<DocumentSnapshot> _myDocCount=snapshots.documents; 
+
+    return _myDocCount.length;
+    
   }
 }

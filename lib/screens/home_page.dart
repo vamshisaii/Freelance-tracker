@@ -7,6 +7,8 @@ import 'package:platform_alert_dialog/platform_alert_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:ui_practice/custom_widgets/joblist_tile.dart';
 import 'package:ui_practice/custom_widgets/list_items_builder.dart';
+import 'package:ui_practice/entries/entries_bloc.dart';
+import 'package:ui_practice/entries/entries_page.dart';
 import 'package:ui_practice/models/job.dart';
 import 'package:ui_practice/screens/EditJobPage.dart';
 import 'package:ui_practice/services/auth.dart';
@@ -22,8 +24,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   double maxSlide = 250;
   bool _canBeDragged;
   Animation animation;
-  ContainerTransitionType _transitionType=ContainerTransitionType.fade;
-  double _fabDimension=56;
+  ContainerTransitionType _transitionType = ContainerTransitionType.fade;
+  double _fabDimension = 56;
 
   @override
   void initState() {
@@ -35,7 +37,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void toggle() {
     controller.forward();
-    print('toggle');
   }
 
   void toggleback() {
@@ -48,7 +49,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     bool isDragCloseFromRight =
         controller.isCompleted && details.globalPosition.dx > 30;
     _canBeDragged = isDragOpenFromLeft || isDragCloseFromRight;
-    print(controller.status);
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
@@ -82,7 +82,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final database = Provider.of<DataBase>(context, listen: false);
+    final database = Provider.of<Database>(context, listen: false);
     final user = Provider.of<User>(context, listen: false);
 
     return GestureDetector(
@@ -90,6 +90,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       onHorizontalDragUpdate: _onDragUpdate,
       onHorizontalDragEnd: _onDragEnd,
       child: Scaffold(
+        backgroundColor: Colors.white,
         /* appBar: AppBar(
             backgroundColor: Colors.transparent,
             title: Center(child: Text("           Jobs")),
@@ -117,7 +118,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ..setEntry(3, 2, 0.001)
                           ..rotateY(pi / 2 * (1 - controller.value)),
                         alignment: Alignment.centerRight,
-                        child: _buildSideBar())),
+                        child: _buildSideBar(database))),
                 Transform.translate(
                     offset: Offset(maxSlide * controller.value, 0),
                     child: Transform(
@@ -138,44 +139,48 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ]);
             }),
         floatingActionButton: OpenContainer(
-        transitionType: _transitionType,
-        transitionDuration: Duration(milliseconds:350),
-        openBuilder: (BuildContext context, VoidCallback _) {
-          return EditJobPage(database: database,job: null,);
-        },
-        closedElevation: 6.0,
-        closedShape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(56 / 2),
-          ),
-        ),
-        closedColor: Theme.of(context).colorScheme.secondary,
-        closedBuilder: (BuildContext context, VoidCallback openContainer) {
-          return SizedBox(
-            height: _fabDimension,
-            width: _fabDimension,
-            child: Center(
-              child: Icon(
-                Icons.add,
-                color: Theme.of(context).colorScheme.onSecondary,
-              ),
+          transitionType: _transitionType,
+          transitionDuration: Duration(milliseconds: 350),
+          openBuilder: (BuildContext context, VoidCallback _) {
+            return EditJobPage(
+              database: database,
+              job: null,
+            );
+          },
+          closedElevation: 6.0,
+          closedShape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(56 / 2),
             ),
-          );
-        },
-      ),
+          ),
+          closedColor: Theme.of(context).colorScheme.secondary,
+          closedBuilder: (BuildContext context, VoidCallback openContainer) {
+            return SizedBox(
+              height: _fabDimension,
+              width: _fabDimension,
+              child: Center(
+                child: Icon(
+                  Icons.add,
+                  color: Theme.of(context).colorScheme.onSecondary,
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 
-  Container _buildSideBar() => Container(
+  Container _buildSideBar(Database database) => Container(
       width: 250,
-      color: Colors.yellow,
+      color: Colors.blueGrey,
       child: SafeArea(
         child: Column(
           children: <Widget>[
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text('Flutter Sidebar',
+                Text('  Sidebar',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 25,
@@ -186,8 +191,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 )
               ],
             ),
-            Row(
-              children: <Widget>[Icon(Icons.next_week), Text('News')],
+            ListTile(
+              leading: Icon(Icons.group_work),
+              title: Text('Entries'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Provider<EntriesBloc>(
+                    create: (_) => EntriesBloc(database: database),
+                    child: EntriesPage(),
+                  ),
+                ),
+              ),
             )
           ],
         ),
@@ -218,7 +233,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   child: Container(),
                 ),
                 Text(
-                  '       JOBS',
+                  '      JOBS',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Expanded(
@@ -299,7 +314,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildContents(BuildContext context) {
-    final database = Provider.of<DataBase>(context, listen: false);
+    final database = Provider.of<Database>(context, listen: false);
     return StreamBuilder<List<Job>>(
       stream: database.jobsStream(),
       builder: (context, snapshot) {

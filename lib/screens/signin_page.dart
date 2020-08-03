@@ -127,7 +127,6 @@ class _Signin_pageState extends State<Signin_page> {
                     children: <Widget>[
                       FlatButton(
                           onPressed: () {
-                            print("register page");
                             _toggleFormType();
                           },
                           child: Text(model.secondaryButtonText))
@@ -140,7 +139,6 @@ class _Signin_pageState extends State<Signin_page> {
                       IconButton(
                           icon: Image.asset('images/google.png'),
                           onPressed: () {
-                            print("google sign in");
                             _signinWithGoogle();
                           }),
                       SizedBox(
@@ -149,7 +147,6 @@ class _Signin_pageState extends State<Signin_page> {
                       IconButton(
                           icon: Image.asset('images/facebook.png'),
                           onPressed: () {
-                            print("facebook sign in");
                           }),
                     ],
                   )
